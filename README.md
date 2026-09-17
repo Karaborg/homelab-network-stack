@@ -3,6 +3,10 @@
 A zero-touch, Docker Compose-first network stack for Raspberry Pi 5, ARM64,
 and x86_64 hosts.
 
+<p align="center">
+  <img src="assets/pihole-dashboard.png" alt="Homelab Network Stack: Pi-hole, Unbound and WireGuard architecture" width="100%">
+</p>
+
 It starts three services:
 
 - **Pi-hole**: DNS filtering and its web dashboard;
