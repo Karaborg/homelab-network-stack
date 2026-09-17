@@ -1,0 +1,81 @@
+name: homelab-network
+
+services:
+  unbound:
+    image: crazymax/unbound:1.24.2
+    container_name: homelab-unbound
+    restart: unless-stopped
+    networks:
+      dns:
+        ipv4_address: 172.30.0.2
+    volumes:
+      - ./config/unbound:/config:ro
+    healthcheck:
+      test: ["CMD-SHELL", "drill @127.0.0.1 -p 5053 example.com >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  pihole:
+    image: pihole/pihole:2026.07.2
+    container_name: homelab-pihole
+    restart: unless-stopped
+    depends_on:
+      unbound:
+        condition: service_healthy
+    environment:
+      TZ: ${TZ}
+      FTLCONF_webserver_api_password: ${PIHOLE_PASSWORD}
+      FTLCONF_dns_upstreams: unbound#5053
+      FTLCONF_dns_listeningMode: all
+      FTLCONF_dns_dnssec: "true"
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "${DNS_PORT}:53/tcp"
+      - "${DNS_PORT}:53/udp"
+      - "${PIHOLE_WEB_PORT}:80/tcp"
+      - "${PIHOLE_WEB_HTTPS_PORT}:443/tcp"
+    volumes:
+      - ./runtime/pihole:/etc/pihole
+    networks:
+      dns:
+        ipv4_address: 172.30.0.3
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1/admin/ >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+
+  wireguard:
+    image: lscr.io/linuxserver/wireguard:1.0.20260223-r0-ls120
+    container_name: homelab-wireguard
+    restart: unless-stopped
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    ports:
+      - "${WG_PORT}:51820/udp"
+    volumes:
+      - ./runtime/wireguard:/etc/wireguard
+      - /lib/modules:/lib/modules:ro
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.src_valid_mark=1
+    networks:
+      dns:
+        ipv4_address: 172.30.0.4
+
+networks:
+  dns:
+    name: homelab-dns
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24

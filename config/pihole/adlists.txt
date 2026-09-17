@@ -1,0 +1,5 @@
+# One list per line. Comments and blank lines are ignored by bootstrap-adlists.sh.
+# Start conservatively; manage later changes in the Pi-hole web UI.
+https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/multi.txt
+

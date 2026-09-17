@@ -1,0 +1,10 @@
+# Runtime data: contains Pi-hole databases, credentials, and WireGuard keys.
+runtime/
+runtime.before-restore-*/
+backups/
+.env
+.env.before-restore-*
+
+# Local audits and IDE data.
+homelab-audit-*.txt
+.idea/
