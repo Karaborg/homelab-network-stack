@@ -50,6 +50,13 @@ WG_ENDPOINT=vpn.example.com ./scripts/install.sh
 Open Pi-hole at `http://<host-lan-ip>/admin/` using the password printed by the
 installer.
 
+To test beside an existing native Pi-hole without touching ports `53`, `80`, or
+`443`, use a separate clone and alternate ports:
+
+```bash
+DNS_PORT=1053 PIHOLE_WEB_PORT=18080 PIHOLE_WEB_HTTPS_PORT=18443 ./scripts/install.sh
+```
+
 ## Router and two network interfaces
 
 - Configure router DHCP DNS as the host's stable **Ethernet** IP.

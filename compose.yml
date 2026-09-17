@@ -58,7 +58,7 @@ services:
       PGID: ${PGID}
       TZ: ${TZ}
     ports:
-      - "${WG_PORT}:51820/udp"
+      - "${WG_PORT}:${WG_PORT}/udp"
     volumes:
       - ./runtime/wireguard:/etc/wireguard
       - /lib/modules:/lib/modules:ro

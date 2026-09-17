@@ -22,7 +22,8 @@ if [[ -f "$ENV_FILE" ]]; then
 fi
 
 timezone="${TZ:-$(timedatectl show --property=Timezone --value 2>/dev/null || printf 'UTC')}"
-host_lan_ip="${HOST_LAN_IP:-$(ip -4 route get 1.1.1.1 2>/dev/null | awk '/src/ {for (i = 1; i <= NF; i++) if ($i == "src") print $(i + 1); exit}') }"
+detected_lan_ip="$(ip -4 route get 1.1.1.1 2>/dev/null | awk '/src/ {for (i = 1; i <= NF; i++) if ($i == "src") print $(i + 1); exit}')"
+host_lan_ip="${HOST_LAN_IP:-$detected_lan_ip}"
 [[ -n "$host_lan_ip" ]] || fail 'Could not detect a primary LAN IPv4 address. Set HOST_LAN_IP and run again.'
 
 if [[ "${WG_ENDPOINT:-auto}" == "auto" ]]; then
@@ -38,6 +39,9 @@ puid="${PUID:-$(id -u)}"
 pgid="${PGID:-$(id -g)}"
 wg_port="${WG_PORT:-51820}"
 wg_subnet="${WG_SUBNET:-10.66.0.0/24}"
+pihole_web_port="${PIHOLE_WEB_PORT:-80}"
+pihole_web_https_port="${PIHOLE_WEB_HTTPS_PORT:-443}"
+dns_port="${DNS_PORT:-53}"
 [[ "$wg_subnet" =~ ^([0-9]{1,3}\.){3}0/[0-9]{1,2}$ ]] || fail 'WG_SUBNET must look like 10.66.0.0/24.'
 wg_server_ip="${wg_subnet%/*}"
 wg_server_ip="${wg_server_ip%.*}.1"
@@ -47,9 +51,9 @@ cat >"$ENV_FILE" <<EOF
 TZ=$timezone
 HOST_LAN_IP=$host_lan_ip
 PIHOLE_PASSWORD=$pihole_password
-PIHOLE_WEB_PORT=80
-PIHOLE_WEB_HTTPS_PORT=443
-DNS_PORT=53
+PIHOLE_WEB_PORT=$pihole_web_port
+PIHOLE_WEB_HTTPS_PORT=$pihole_web_https_port
+DNS_PORT=$dns_port
 WG_PORT=$wg_port
 WG_ENDPOINT=$wg_endpoint
 WG_SUBNET=$wg_subnet
@@ -85,7 +89,7 @@ cat <<EOF
 
 Installed successfully.
 
-Pi-hole:       http://${host_lan_ip}/admin/
+Pi-hole:       http://${host_lan_ip}:${pihole_web_port}/admin/
 Pi-hole password: ${pihole_password}
 
 WireGuard is running with zero clients. Add one when needed:
